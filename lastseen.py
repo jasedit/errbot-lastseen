@@ -23,7 +23,7 @@ class LastSeen(BotPlugin):
 
     @botcmd(split_args_with=',')
     def scout(self, mess, args):
-      if not self['sightings']:
+      if 'sightings' not in self:
           self['sightings'] = {}
 
       for ii in args:
@@ -40,7 +40,7 @@ class LastSeen(BotPlugin):
             'timestamp': datetime.datetime.now()
         }
 
-        if not self['sightings']:
+        if 'sightings' not in self:
             self['sightings'] = {}
         self['sightings'][args[0]] = details
 
