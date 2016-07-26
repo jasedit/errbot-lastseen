@@ -21,7 +21,7 @@ def human_readable_offset(time1, time2):
 class LastSeen(BotPlugin):
     min_err_version = "1.6.0"
 
-    @botcmd(split_args_with=None)
+    @botcmd(split_args_with=',')
     def scout(self, mess, args):
       if not self['sightings']:
           self['sightings'] = {}
