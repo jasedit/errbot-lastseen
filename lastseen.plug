@@ -1,0 +1,9 @@
+[Core]
+Name = LastSeen
+Module = lastseen
+
+[Documentation]
+Description = Plugin for allowing people to report when things (people, Pokemon, etc.) were last seen, and allows querying locations.
+
+[Python]
+Version = 3

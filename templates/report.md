@@ -1,0 +1,1 @@
+{{target}} was last seen at {{location}} by {{user}} {{timestamp}} ago.
