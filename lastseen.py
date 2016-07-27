@@ -48,7 +48,7 @@ class LastSeen(BotPlugin):
         if len(args) < 2:
             return "Report should be in the form of Target;Location"
         details = {
-            'user': mess.frm,
+            'user': "@{0}".format(mess.frm.username),
             'location': args[1],
             'timestamp': datetime.datetime.now()
         }
