@@ -1,6 +1,7 @@
 #Plugin for crowd sourcing when/where something was last seen.
 
 from errbot import BotPlugin, botcmd
+from errbot.backends.base import Person
 from errbot.templating import tenv
 import datetime
 import math
@@ -22,15 +23,24 @@ class LastSeen(BotPlugin):
     """Plugin which allows users to report and request location of objects of interest."""
     min_err_version = "1.6.0"
 
+    def _get_name(self, text):
+        """Attempts to extract a username from the text, returning the direct text otherwise."""
+        try:
+            person = self.build_identifier(text)
+            if isinstance(person, Person):
+                return "@{0}".format(person.username)
+        except ValueError:
+            pass
+        return text
+
     @botcmd(split_args_with=',')
     def scout(self, mess, args):
         """Attempt to get the last reported location of an object of interest. Accepts a comma separated list of names."""
-      if 'sightings' not in self:
-          self['sightings'] = {}
-
-      for ii in args:
-          if ii in self['sightings']:
-            yield self._print_sightings(ii, self['sightings'][ii])
+        if 'sightings' not in self:
+           self['sightings'] = {}
+        for ii in args:
+            person = self._get_name(ii)
+            yield self._report_sighting(person)
 
     @botcmd(split_args_with=';')
     def spot(self, mess, args):
@@ -43,21 +53,27 @@ class LastSeen(BotPlugin):
             'timestamp': datetime.datetime.now()
         }
 
+        target = self._get_name(args[0])
         if 'sightings' not in self:
-            self['sightings'] = {}
-        self['sightings'][args[0]] = details
+            sight = {}
+        else:
+            sight = self['sightings']
 
-        return "Sighting of {0} recorded.".format(args[0])
+        sight[target] = details
+        self['sightings'] = sight
 
-    def _print_sighting(self, tgt, sighting):
+        return "Sighting of {0} recorded.".format(target)
+
+    def _report_sighting(self, tgt):
         """Attempts to find and report a sighting of the given target."""
         args = {'target': tgt}
-        if sighting:
+        if tgt in self['sightings']:
+            sighting = self['sightings'][tgt]
             args['location'] = sighting['location']
             args['user'] = sighting['user']
-            args['timestamp'] = human_readable_offset(sighting['timestamp'], datetime.datetime.now())
+            args['timestamp'] = human_readable_offset(datetime.datetime.now(), sighting['timestamp'])
 
-        if not sighting:
-            return tenv.get_template('miss.md').render(target=tgt)
+        if 'location' not in args:
+            return tenv().get_template('miss.md').render(target=tgt)
         else:
-            return tenv.get_template('report.md').render(**args)
+            return tenv().get_template('report.md').render(**args)
