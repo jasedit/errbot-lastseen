@@ -64,6 +64,31 @@ class LastSeen(BotPlugin):
 
         return "Sighting of {0} recorded.".format(target)
 
+    @botcmd(split_args_with=',', admin_only=True)
+    def scout_remove(self, mess, args):
+        """Admin command to remove specific sightings."""
+        if 'sightings' not in self:
+            return
+        sight = self['sightings']
+        removed = []
+        for ii in args:
+            if ii in sight:
+                del sight[ii]
+                removed.append(ii)
+        self['sightings'] = sight
+        if removed:
+            return 'Removed {0}'.format(', '.join(removed))
+        else:
+            return "No sightings removed."
+
+    @botcmd(admin_only=True)
+    def scout_clear(self, mess, args):
+        """Admin command to clear all sightings from the database."""
+        if 'sightings' in self:
+            self['sightings'] = {}
+
+        return "All sightings removed."
+
     def _report_sighting(self, tgt):
         """Attempts to find and report a sighting of the given target."""
         args = {'target': tgt}
