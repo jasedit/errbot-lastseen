@@ -34,7 +34,7 @@ class LastSeen(BotPlugin):
         return text
 
     @botcmd(split_args_with=',')
-    def scout(self, mess, args):
+    def scout_find(self, mess, args):
         """Attempt to get the last reported location of an object of interest. Accepts a comma separated list of names."""
         if 'sightings' not in self:
            self['sightings'] = {}
@@ -43,7 +43,7 @@ class LastSeen(BotPlugin):
             yield self._report_sighting(person)
 
     @botcmd(split_args_with=';')
-    def spot(self, mess, args):
+    def scout_spot(self, mess, args):
         """Reports the location of an object of interest. Arguments must be in the form of Object;Location."""
         if len(args) < 2:
             return "Report should be in the form of Target;Location"
