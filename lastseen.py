@@ -19,10 +19,12 @@ def human_readable_offset(time1, time2):
     return ', '.join(statements)
 
 class LastSeen(BotPlugin):
+    """Plugin which allows users to report and request location of objects of interest."""
     min_err_version = "1.6.0"
 
     @botcmd(split_args_with=',')
     def scout(self, mess, args):
+        """Attempt to get the last reported location of an object of interest. Accepts a comma separated list of names."""
       if 'sightings' not in self:
           self['sightings'] = {}
 
@@ -30,10 +32,11 @@ class LastSeen(BotPlugin):
           if ii in self['sightings']:
             yield self._print_sightings(ii, self['sightings'][ii])
 
-    @botcmd(split_args_with='@')
+    @botcmd(split_args_with=';')
     def spot(self, mess, args):
+        """Reports the location of an object of interest. Arguments must be in the form of Object;Location."""
         if len(args) < 2:
-            return "Report should be in the form of Target@Location"
+            return "Report should be in the form of Target;Location"
         details = {
             'user': mess.frm,
             'location': args[1],
@@ -47,6 +50,7 @@ class LastSeen(BotPlugin):
         return "Sighting of {0} recorded.".format(args[0])
 
     def _print_sighting(self, tgt, sighting):
+        """Attempts to find and report a sighting of the given target."""
         args = {'target': tgt}
         if sighting:
             args['location'] = sighting['location']
