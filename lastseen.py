@@ -23,6 +23,12 @@ class LastSeen(BotPlugin):
     """Plugin which allows users to report and request location of objects of interest."""
     min_err_version = "1.6.0"
 
+    def _check_storage(self):
+        if 'sightings' not in self:
+            self['sightings'] = {}
+        if 'aliases' not in self:
+            self['aliases'] = {}
+
     def _get_name(self, text):
         """Attempts to extract a username from the text, returning the direct text otherwise."""
         try:
@@ -36,8 +42,7 @@ class LastSeen(BotPlugin):
     @botcmd(split_args_with=',')
     def scout_find(self, mess, args):
         """Attempt to get the last reported location of an object of interest. Accepts a comma separated list of names."""
-        if 'sightings' not in self:
-           self['sightings'] = {}
+        self._check_storage()
         for ii in args:
             person = self._get_name(ii)
             yield self._report_sighting(person)
@@ -54,10 +59,8 @@ class LastSeen(BotPlugin):
         }
 
         target = self._get_name(args[0])
-        if 'sightings' not in self:
-            sight = {}
-        else:
-            sight = self['sightings']
+        self._check_storage()
+        sight = self['sightings']
 
         sight[target] = details
         self['sightings'] = sight
@@ -84,8 +87,7 @@ class LastSeen(BotPlugin):
     @botcmd(admin_only=True)
     def scout_clear(self, mess, args):
         """Admin command to clear all sightings from the database."""
-        if 'sightings' in self:
-            self['sightings'] = {}
+        self._check_storage()
 
         return "All sightings removed."
 
