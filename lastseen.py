@@ -31,6 +31,7 @@ class LastSeen(BotPlugin):
 
     def _get_name(self, text):
         """Attempts to extract a username from the text, returning the direct text otherwise."""
+        text = self['aliases'][text] if text in self['aliases'] else text
         try:
             person = self.build_identifier(text)
             if isinstance(person, Person):
@@ -90,6 +91,57 @@ class LastSeen(BotPlugin):
         self._check_storage()
 
         return "All sightings removed."
+
+    @botcmd(split_args_with=';')
+    def scout_alias(self, mess, args):
+        """Add an alias for a given name - maps one name for a sighting to another.
+        Arguments should be written as source;target, where target is the desired final name.
+        """
+        if len(args) is not 2:
+            return "Argument requires two arguments separated by a ;"
+        self._check_storage()
+
+        source = args[0]
+        target = args[1]
+        aliases = self['aliases']
+
+        if source not in aliases:
+            aliases[source] = target
+            self['aliases'] = aliases
+            return "Added alias {0} to {1}.".format(source, target)
+
+    @botcmd(split_args_with=';')
+    def scout_rmalias(self, mess, args):
+        """Removes the provided list of aliases."""
+        self._check_storage()
+        aliases = self['aliases']
+        for ii in args:
+            aliases.pop(ii, None)
+        self['aliases'] = aliases
+
+    @botcmd
+    def scout_lsalias(self, mess, args):
+        self._check_storage()
+        if len(self['aliases']) == 0:
+            return "No aliases currently listed."
+
+        for ii, jj in self['aliases'].items():
+            yield "{0} maps to {1}".format(ii, jj)
+
+    @botcmd(admin_only=True)
+    def scout_compact(self, mess):
+        """Update all sightings using the alias map as a cleanup operation."""
+        self._check_storage()
+        sightings = self['sightings']
+        updates = {} #Map from old name to new
+        for ii in sightings:
+            if ii in self['aliases']:
+                updates[ii] = self['aliases'][ii]
+        #Map is built, now update the sightings
+        for ii, jj in updates:
+            if jj not in sightings or sightings[ii]['timestamp'] < sightings[jj]['timestamps']:
+                sightings[jj] = sightings[ii]
+                del sightings[ii]
 
     def _report_sighting(self, tgt):
         """Attempts to find and report a sighting of the given target."""
