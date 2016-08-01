@@ -35,7 +35,7 @@ class LastSeen(BotPlugin):
         try:
             person = self.build_identifier(text)
             if isinstance(person, Person):
-                return "@{0}".format(person.username)
+                return self.build_identifier("@{0}".format(person.username))
         except ValueError:
             pass
         return text
